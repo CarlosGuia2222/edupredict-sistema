@@ -1,20 +1,24 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Layout from './components/Layout'
+import Dashboard from './pages/Dashboard'
+import Prediccion from './pages/Prediccion'
+import Historial from './pages/Historial'
+import Dataset from './pages/Dataset'
+import Acerca from './pages/Acerca'
+
 function App() {
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center">
-      <div className="bg-white rounded-2xl shadow-lg p-8 max-w-xl text-center">
-        <h1 className="text-4xl font-bold text-blue-700 mb-4">
-          EduPredict
-        </h1>
-
-        <p className="text-slate-600 text-lg">
-          Sistema de Alerta Temprana Escolar
-        </p>
-
-        <p className="text-slate-500 mt-4">
-          Frontend con React, Vite y Tailwind CSS funcionando correctamente.
-        </p>
-      </div>
-    </div>
+    <BrowserRouter>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/prediccion" element={<Prediccion />} />
+          <Route path="/historial" element={<Historial />} />
+          <Route path="/dataset" element={<Dataset />} />
+          <Route path="/acerca" element={<Acerca />} />
+        </Routes>
+      </Layout>
+    </BrowserRouter>
   )
 }
 
