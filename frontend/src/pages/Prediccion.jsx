@@ -1,5 +1,13 @@
 import { useState } from 'react'
-import { Brain, User, BookOpen, Bus, Wifi, Briefcase, HeartHandshake } from 'lucide-react'
+import {
+  Brain,
+  User,
+  BookOpen,
+  Bus,
+  Wifi,
+  Briefcase,
+  HeartHandshake,
+} from 'lucide-react'
 import ResultadoCard from '../components/ResultadoCard'
 
 function Prediccion() {
@@ -108,7 +116,10 @@ function Prediccion() {
       resultado: resultadoTexto,
       probabilidad,
       nivel,
-      factores: factores.length > 0 ? factores : ['No se detectaron factores críticos importantes'],
+      factores:
+        factores.length > 0
+          ? factores
+          : ['No se detectaron factores críticos importantes'],
     }
   }
 
@@ -117,10 +128,28 @@ function Prediccion() {
 
     const nuevoResultado = calcularRiesgoSimulado(formData)
 
-    setResultado({
+    const resultadoCompleto = {
+      id: Date.now(),
       estudiante: formData.nombre || 'Estudiante sin nombre',
+      promedio: formData.promedio,
+      faltas: formData.faltas,
+      asistencia: formData.asistencia,
+      materias_reprobadas: formData.materias_reprobadas,
+      fecha: new Date().toLocaleDateString('es-MX'),
       ...nuevoResultado,
-    })
+    }
+
+    setResultado(resultadoCompleto)
+
+    const historialActual =
+      JSON.parse(localStorage.getItem('historialPredicciones')) || []
+
+    const nuevoHistorial = [resultadoCompleto, ...historialActual]
+
+    localStorage.setItem(
+      'historialPredicciones',
+      JSON.stringify(nuevoHistorial)
+    )
   }
 
   return (
@@ -130,7 +159,8 @@ function Prediccion() {
           Nueva predicción
         </h2>
         <p className="text-slate-500 mt-2">
-          Ingresa los datos académicos y socioeconómicos del estudiante para estimar su riesgo de deserción escolar.
+          Ingresa los datos académicos y socioeconómicos del estudiante para
+          estimar su riesgo de deserción escolar.
         </p>
       </div>
 
@@ -272,7 +302,6 @@ function Prediccion() {
                 name="beca"
                 value={formData.beca}
                 onChange={handleChange}
-                icon={BookOpen}
               />
 
               <Select
@@ -280,7 +309,6 @@ function Prediccion() {
                 name="trabaja"
                 value={formData.trabaja}
                 onChange={handleChange}
-                icon={Briefcase}
               />
 
               <Select
@@ -288,7 +316,6 @@ function Prediccion() {
                 name="acceso_internet"
                 value={formData.acceso_internet}
                 onChange={handleChange}
-                icon={Wifi}
               />
 
               <Select
@@ -296,7 +323,6 @@ function Prediccion() {
                 name="apoyo_familiar"
                 value={formData.apoyo_familiar}
                 onChange={handleChange}
-                icon={Bus}
               />
             </div>
           </div>
@@ -317,7 +343,15 @@ function Prediccion() {
   )
 }
 
-function Input({ label, name, value, onChange, type = 'text', placeholder, required = false }) {
+function Input({
+  label,
+  name,
+  value,
+  onChange,
+  type = 'text',
+  placeholder,
+  required = false,
+}) {
   return (
     <label className="block">
       <span className="text-sm font-medium text-slate-600">

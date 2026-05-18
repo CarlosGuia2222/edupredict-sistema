@@ -13,7 +13,8 @@ function ResultadoCard({ resultado }) {
         </h3>
 
         <p className="text-slate-500 mt-3 leading-relaxed">
-          Completa el formulario y presiona “Analizar estudiante” para visualizar el nivel de riesgo estimado.
+          Completa el formulario y presiona “Analizar estudiante” para
+          visualizar el nivel de riesgo estimado.
         </p>
       </div>
     )
@@ -46,8 +47,12 @@ function ResultadoCard({ resultado }) {
   const Icon = estilos.icon
 
   return (
-    <div className={`rounded-2xl shadow-sm border border-slate-200 p-6 sticky top-8 ${estilos.bg}`}>
-      <div className={`flex items-center justify-center w-16 h-16 rounded-2xl ${estilos.badge} mb-5`}>
+    <div
+      className={`rounded-2xl shadow-sm border border-slate-200 p-6 sticky top-8 ${estilos.bg}`}
+    >
+      <div
+        className={`flex items-center justify-center w-16 h-16 rounded-2xl ${estilos.badge} mb-5`}
+      >
         <Icon size={34} />
       </div>
 
@@ -60,7 +65,9 @@ function ResultadoCard({ resultado }) {
       </h3>
 
       <div className="mt-6">
-        <span className={`inline-flex px-4 py-2 rounded-full text-sm font-semibold ${estilos.badge}`}>
+        <span
+          className={`inline-flex px-4 py-2 rounded-full text-sm font-semibold ${estilos.badge}`}
+        >
           Riesgo {resultado.nivel}
         </span>
       </div>
@@ -82,7 +89,11 @@ function ResultadoCard({ resultado }) {
         <div className="w-full h-3 bg-white rounded-full overflow-hidden border border-slate-200">
           <div
             className={`h-full ${
-              esAlto ? 'bg-red-500' : esMedio ? 'bg-orange-500' : 'bg-green-500'
+              esAlto
+                ? 'bg-red-500'
+                : esMedio
+                  ? 'bg-orange-500'
+                  : 'bg-green-500'
             }`}
             style={{ width: `${resultado.probabilidad}%` }}
           />
