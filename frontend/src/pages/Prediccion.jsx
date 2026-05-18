@@ -3,11 +3,12 @@ import {
   Brain,
   User,
   BookOpen,
-  Bus,
   Wifi,
   Briefcase,
   HeartHandshake,
+  Loader2,
 } from 'lucide-react'
+import axios from 'axios'
 import ResultadoCard from '../components/ResultadoCard'
 
 function Prediccion() {
@@ -28,6 +29,8 @@ function Prediccion() {
   })
 
   const [resultado, setResultado] = useState(null)
+  const [cargando, setCargando] = useState(false)
+  const [error, setError] = useState('')
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -38,118 +41,44 @@ function Prediccion() {
     })
   }
 
-  const calcularRiesgoSimulado = (datos) => {
-    let puntos = 0
-    const factores = []
-
-    const promedio = Number(datos.promedio)
-    const faltas = Number(datos.faltas)
-    const materias = Number(datos.materias_reprobadas)
-    const asistencia = Number(datos.asistencia)
-    const traslado = Number(datos.tiempo_traslado)
-    const creditos = Number(datos.creditos_aprobados)
-
-    if (promedio < 70) {
-      puntos += 25
-      factores.push('Promedio académico bajo')
-    }
-
-    if (faltas > 15) {
-      puntos += 20
-      factores.push('Cantidad elevada de faltas')
-    }
-
-    if (materias >= 3) {
-      puntos += 20
-      factores.push('Varias materias reprobadas')
-    }
-
-    if (asistencia < 75) {
-      puntos += 20
-      factores.push('Porcentaje de asistencia bajo')
-    }
-
-    if (datos.trabaja === '1') {
-      puntos += 8
-      factores.push('El estudiante trabaja mientras estudia')
-    }
-
-    if (datos.beca === '0') {
-      puntos += 7
-      factores.push('No cuenta con beca o apoyo económico')
-    }
-
-    if (datos.acceso_internet === '0') {
-      puntos += 7
-      factores.push('No cuenta con acceso a internet')
-    }
-
-    if (datos.apoyo_familiar === '0') {
-      puntos += 8
-      factores.push('Apoyo familiar limitado')
-    }
-
-    if (traslado > 60) {
-      puntos += 7
-      factores.push('Tiempo de traslado elevado')
-    }
-
-    if (creditos < 40) {
-      puntos += 6
-      factores.push('Bajo avance académico en créditos')
-    }
-
-    const probabilidad = Math.min(puntos, 100)
-
-    let nivel = 'Bajo'
-    let resultadoTexto = 'Sin riesgo crítico de deserción'
-
-    if (probabilidad >= 70) {
-      nivel = 'Alto'
-      resultadoTexto = 'Riesgo alto de deserción'
-    } else if (probabilidad >= 40) {
-      nivel = 'Medio'
-      resultadoTexto = 'Riesgo medio de deserción'
-    }
-
-    return {
-      resultado: resultadoTexto,
-      probabilidad,
-      nivel,
-      factores:
-        factores.length > 0
-          ? factores
-          : ['No se detectaron factores críticos importantes'],
-    }
-  }
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setCargando(true)
+    setError('')
 
-    const nuevoResultado = calcularRiesgoSimulado(formData)
+    try {
+      const respuesta = await axios.post('http://127.0.0.1:5000/predict', formData)
 
-    const resultadoCompleto = {
-      id: Date.now(),
-      estudiante: formData.nombre || 'Estudiante sin nombre',
-      promedio: formData.promedio,
-      faltas: formData.faltas,
-      asistencia: formData.asistencia,
-      materias_reprobadas: formData.materias_reprobadas,
-      fecha: new Date().toLocaleDateString('es-MX'),
-      ...nuevoResultado,
+      const resultadoCompleto = {
+        id: Date.now(),
+        estudiante: formData.nombre || 'Estudiante sin nombre',
+        promedio: formData.promedio,
+        faltas: formData.faltas,
+        asistencia: formData.asistencia,
+        materias_reprobadas: formData.materias_reprobadas,
+        fecha: new Date().toLocaleDateString('es-MX'),
+        ...respuesta.data,
+      }
+
+      setResultado(resultadoCompleto)
+
+      const historialActual =
+        JSON.parse(localStorage.getItem('historialPredicciones')) || []
+
+      const nuevoHistorial = [resultadoCompleto, ...historialActual]
+
+      localStorage.setItem(
+        'historialPredicciones',
+        JSON.stringify(nuevoHistorial)
+      )
+    } catch (error) {
+      console.error(error)
+      setError(
+        'No se pudo conectar con el backend. Verifica que Flask esté corriendo en http://127.0.0.1:5000/'
+      )
+    } finally {
+      setCargando(false)
     }
-
-    setResultado(resultadoCompleto)
-
-    const historialActual =
-      JSON.parse(localStorage.getItem('historialPredicciones')) || []
-
-    const nuevoHistorial = [resultadoCompleto, ...historialActual]
-
-    localStorage.setItem(
-      'historialPredicciones',
-      JSON.stringify(nuevoHistorial)
-    )
   }
 
   return (
@@ -160,9 +89,15 @@ function Prediccion() {
         </h2>
         <p className="text-slate-500 mt-2">
           Ingresa los datos académicos y socioeconómicos del estudiante para
-          estimar su riesgo de deserción escolar.
+          estimar su riesgo de deserción escolar usando la red neuronal del backend.
         </p>
       </div>
+
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 rounded-2xl p-4">
+          {error}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <form
@@ -179,7 +114,7 @@ function Prediccion() {
                 Datos del estudiante
               </h3>
               <p className="text-sm text-slate-500">
-                Formulario de análisis para EduPredict.
+                Formulario conectado al modelo MLP entrenado en Python.
               </p>
             </div>
           </div>
@@ -316,6 +251,7 @@ function Prediccion() {
                 name="acceso_internet"
                 value={formData.acceso_internet}
                 onChange={handleChange}
+                icon={Wifi}
               />
 
               <Select
@@ -323,15 +259,18 @@ function Prediccion() {
                 name="apoyo_familiar"
                 value={formData.apoyo_familiar}
                 onChange={handleChange}
+                icon={Briefcase}
               />
             </div>
           </div>
 
           <button
             type="submit"
-            className="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-4 rounded-xl transition shadow-sm"
+            disabled={cargando}
+            className="w-full bg-blue-700 hover:bg-blue-800 disabled:bg-blue-400 text-white font-semibold py-4 rounded-xl transition shadow-sm flex items-center justify-center gap-2"
           >
-            Analizar estudiante
+            {cargando && <Loader2 size={20} className="animate-spin" />}
+            {cargando ? 'Analizando...' : 'Analizar estudiante'}
           </button>
         </form>
 
